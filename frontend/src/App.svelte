@@ -1,64 +1,78 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import svelteLogo from './assets/svelte.svg';
-  import viteLogo from '/vite.svg';
-  import Counter from './lib/Counter.svelte';
+  import type { Article } from './lib/Article.svelte';
+  import { fetchApiKey, fetchArticles } from './lib/Article.svelte';
+  import NYTHead from './assets/NewYorkTimesHead.png'
 
-  let apiKey: string = '';
+
+  let date: string = new Date().toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  })
+
+  let apiKey: string = ''
+  let articles: Article[] = [];
+  let page: number = 0;
+
+  async function updateOnScroll(): Promise<void> {
+    const bottomOfPage = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
+    if (bottomOfPage) {
+      page += 1;
+      let newArticles = await fetchArticles(apiKey, page);
+      articles = [...articles, ...newArticles]
+    }
+  }
 
   onMount(async () => {
-    try {
-      const res = await fetch('/api/key');
-      const data = await res.json();
-      apiKey = data.apiKey;
-    } catch (error) {
-      console.error('Failed to fetch API key:', error);
+    apiKey = await fetchApiKey();
+    if (apiKey) {
+      try {
+        let newArticles = await fetchArticles(apiKey, page);
+        articles = [...articles, ...newArticles]
+      } catch (e) {
+        console.error('Failed to fetch articles:', (e as Error).message);
+      }
+    } else {
+      console.error('API key was not fetched, cannot fetch articles.');
+      articles = [];
     }
-  }); 
+    window.addEventListener('scroll', updateOnScroll);
+  });
 </script>
 
 <main>
-  <div>
-    <a href="https://vite.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
+  <header>
+    <img src={NYTHead} alt="New York Times logo" class="nyt-head">
+    <div class="page-info">
+      <p class="page-date">{date}</p>
+      <span class="page-meta">Today's Paper</span>
+    </div>
+    <nav>
+      <ul>
+        <li>U.S.</li>
+        <li>World</li>
+        <li>Business</li>
+        <li>Arts</li>
+        <li>Lifestyle</li>
+        <li>Opinion</li>
+        <li>Audio</li>
+        <li>Games</li>
+        <li>Cooking</li>
+      </ul>
+    </nav>
+  </header>
+  <hr>
+  <div class="column-container">
+    {#each articles as article}
+      <article class="column">
+        <h2><a href={article.url} target="_blank" rel="noopener noreferrer">{article.headline}</a></h2>
+        <p>{article.snippet}</p>
+        <small>{article.published.toLocaleDateString()}</small>
+        <div style="height: 1rem;"></div>
+        <img class="article-img" src={article.img_url} alt={article.img_cap}>
+      </article>
+    {/each}
   </div>
-  <h1>Vite + Svelte</h1>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Your API Key: <strong>{apiKey}</strong>
-  </p>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
 </main>
-
-<style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
-</style>
