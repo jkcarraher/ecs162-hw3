@@ -114,7 +114,7 @@
 
   .post-comment-section button {
     padding: 10px 15px;
-    background-color: #007bff; /* Example button color */
+    background-color: #567B94;
     color: white;
     border: none;
     border-radius: 0 5px 5px 0;
