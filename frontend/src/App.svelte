@@ -18,7 +18,8 @@
   let page: number = 0;
   let selectedArticleId: string | null = null;
   let showModal: boolean = false;
-  let comments: string[] = []; // Placeholder for comments
+  let comments: string[] = [];
+  let commentCounts: { [articleUrl: string]: number } = {};
 
   async function fetchComments(articleId: string): Promise<string[]> {
     // In a real application, you would fetch comments from an API
@@ -88,15 +89,19 @@
   <hr>
   <div class="column-container">
     {#each articles as article (article.url)} <article class="column">
+        <img class="article-img" src={article.img_url} alt={article.img_cap}>
         <h2><a href={article.url} target="_blank" rel="noopener noreferrer">{article.headline}</a></h2>
         <p>{article.snippet}</p>
-        <small>{article.published.toLocaleDateString()}</small>
-        <div class="article-actions">
-          <button class="comment-button" on:click={() => handleCommentButtonClick(article.url)}>
-            <img src={CommentIcon} alt="Comment Icon" class="comment-icon">
-          </button>
+        <div class="article-info">
+          <small>{article.published.toLocaleDateString()}</small>
+          <div class="article-actions">
+            <button class="comment-button" on:click={() => handleCommentButtonClick(article.url)}>
+              <img src={CommentIcon} alt="Comment Icon" class="comment-icon">
+              <span class="comment-count">{commentCounts[article.url] || 0}</span>
+            </button>
+          </div>
         </div>
-        <img class="article-img" src={article.img_url} alt={article.img_cap}>
+        
       </article>
     {/each}
   </div>
