@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, session
+from flask import Flask, redirect, url_for, session, jsonify
 from authlib.integrations.flask_client import OAuth
 from authlib.common.security import generate_token
 import os
@@ -54,3 +54,9 @@ def logout():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8000)
+
+
+# Old Code
+@app.route('/api/key')
+def get_key():
+    return jsonify({'apiKey': os.getenv('NYT_API_KEY')})
