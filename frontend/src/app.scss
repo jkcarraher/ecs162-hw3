@@ -102,6 +102,18 @@ h2 {
   max-width: 95%;
 }
 
+.comment-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+.comment-icon {
+  width: 24px;
+  height: 24px;
+}
+
 // MEDIA QUERIES
 
 // Desktop: width >1024px
