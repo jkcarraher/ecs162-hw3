@@ -6,7 +6,8 @@ from authlib.integrations.flask_client import OAuth
 from authlib.common.security import generate_token
 import os
 import logging
-logging.basicConfig(level=logging.DEBUG)
+from bson.objectid import ObjectId
+
 
 
 app = Flask(__name__)
@@ -79,7 +80,6 @@ def get_user():
 
 @app.route('/api/comment', methods=['POST'])
 def post_comment():
-    # Require the user to be logged in
     user = session.get('user')
     if not user:
         return jsonify({'error': 'User not logged in'}), 401
@@ -119,3 +119,50 @@ def get_article_comments(article_id):
             comment["createdAt"] = comment["createdAt"].isoformat()
         comments.append(comment)
     return jsonify(comments)
+
+def get_descendant_ids(parent_id: str) -> list:
+    descendants = []
+    children = comments_collection.find({"parentCommentId": parent_id})
+    for child in children:
+        child_id = str(child["_id"])
+        descendants.append(child_id)
+        descendants.extend(get_descendant_ids(child_id))
+    return descendants
+
+@app.route('/api/comment/<comment_id>', methods=['DELETE'])
+def delete_comment(comment_id):
+    # Require the user to be logged in
+    user = session.get('user')
+    if not user:
+        return jsonify({'error': 'User not logged in'}), 401
+
+    # Fetch the comment from the database
+    try:
+        comment = comments_collection.find_one({"_id": ObjectId(comment_id)})
+    except Exception as e:
+        return jsonify({"error": "Invalid comment ID"}), 400
+
+    if not comment:
+        return jsonify({"error": "Comment not found"}), 404
+
+    # Check if the user is allowed to delete this comment.
+    comment_owner_email = comment.get("user", {}).get("email")
+    logged_in_email = user.get("email")
+    is_moderator = "moderator" in user.get("name", "").lower()
+
+    if comment_owner_email != logged_in_email and not is_moderator:
+        return jsonify({"error": "Not authorized to delete this comment"}), 403
+
+    # Get all descendant comment IDs recursively
+    descendant_ids = get_descendant_ids(comment_id)
+    all_ids = [ObjectId(comment_id)] + [ObjectId(child_id) for child_id in descendant_ids]
+
+    # Delete the parent comment and all its descendants
+    try:
+        result = comments_collection.delete_many({"_id": {"$in": all_ids}})
+        if result.deleted_count > 0:
+            return jsonify({"message": "Comment and its child comments deleted successfully"}), 200
+        else:
+            return jsonify({"error": "Comment not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400

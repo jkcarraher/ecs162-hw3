@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import type { Article } from './lib/Article.svelte';
   import { fetchApiKey, fetchArticles } from './lib/Article.svelte';
-  import NYTHead from './assets/NewYorkTimesHead.png';
   import CommentIcon from './assets/comment.png';
   import CommentModal from './lib/CommentModal.svelte';
   import LoginModal from './lib/LoginModal.svelte';
@@ -19,28 +18,49 @@
   let page: number = 0;
   let selectedArticleId: string | null = null;
   let showModal: boolean = false;
-  let comments: string[] = [];
-  let commentCounts: { [articleUrl: string]: number } = {};
+
+  // Change commentCounts to be keyed by article id
+  let commentCounts: { [articleId: string]: number } = {};
 
   let loggedIn: boolean = false; 
   let showLoginModal: boolean = false;
   let userEmail: string = '';
   let isModerator: boolean = false;
 
-  async function fetchComments(articleId: string): Promise<string[]> {
-    return [`Comment 1 for article ${articleId}`, `Another thought on article ${articleId}`];
+  // Fetch comment count for a particular article by its id
+  async function updateCommentCount(articleId: string): Promise<void> {
+    try {
+      const res = await fetch(`http://localhost:8000/api/comments/${articleId}`, { 
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        commentCounts[articleId] = data.length;
+      } else {
+        commentCounts[articleId] = 0;
+      }
+    } catch (err) {
+      console.error(`Failed to fetch count for article ${articleId}:`, err);
+      commentCounts[articleId] = 0;
+    }
+  }
+
+  // Call update for each article in the list
+  async function updateAllCommentCounts(): Promise<void> {
+    await Promise.all(articles.map(article => updateCommentCount(article.id)));
   }
 
   async function handleCommentButtonClick(articleId: string): Promise<void> {
     selectedArticleId = articleId;
-    comments = await fetchComments(articleId);
     showModal = true;
+    // Update the count when opening the modal as well
+    await updateCommentCount(articleId);
   }
 
   function closeModal(): void {
     showModal = false;
     selectedArticleId = null;
-    comments = [];
   }
 
   function handleLoginButtonClick(): void {
@@ -65,12 +85,14 @@
       page += 1;
       let newArticles = await fetchArticles(apiKey, page);
       articles = [...articles, ...newArticles];
+      // Update comment counts for the new articles
+      await updateAllCommentCounts();
     }
   }
 
   async function checkLogin(): Promise<void> {
     try {
-      const res = await fetch('/api/user');
+      const res = await fetch('/api/user', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         userEmail = data.email || '';
@@ -95,6 +117,7 @@
       try {
         let newArticles = await fetchArticles(apiKey, page);
         articles = [...articles, ...newArticles];
+        await updateAllCommentCounts();
       } catch (e) {
         console.error('Failed to fetch articles:', (e as Error).message);
       }
@@ -103,8 +126,7 @@
       articles = [];
     }
     // Call the /api/user route in the backend to set login state
-    await checkLogin();
-    
+    await checkLogin();    
     window.addEventListener('scroll', updateOnScroll);
   });
 </script>
@@ -132,7 +154,7 @@
       </div>
   </nav>
   <div class="column-container">
-    {#each articles as article (article.url)}
+    {#each articles as article (article.id)}
       <article class="column">
         <img class="article-img" src={article.img_url} alt={article.img_cap}>
         <h2>
@@ -146,7 +168,7 @@
           <div class="article-actions">
             <button class="comment-button" on:click={() => handleCommentButtonClick(article.id)}>
               <img src={CommentIcon} alt="Comment Icon" class="comment-icon">
-              <span class="comment-count">{commentCounts[article.url] || 0}</span>
+              <span class="comment-count">{commentCounts[article.id] || 0}</span>
             </button>
           </div>
         </div>
@@ -156,6 +178,8 @@
 
   {#if showModal && selectedArticleId}
     <CommentModal
+      userEmail={userEmail}
+      isModerator={isModerator}
       selectedArticleId={selectedArticleId}
       onClose={closeModal}
       articleHeadline={articles.find(article => article.id === selectedArticleId)?.headline || 'Untitled Article'}

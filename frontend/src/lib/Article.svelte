@@ -74,7 +74,7 @@
     const data: Response = await response.json();
 
     return data.response.docs.map(doc => ({
-      id: doc._id.toString().replace('nyt://article/', ''), // remove the prefix
+      id: doc._id.toString().replace('nyt://article/', ''),
       headline: doc.headline.main,
       url: doc.web_url,
       snippet: doc.snippet,
