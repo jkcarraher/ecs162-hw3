@@ -62,5 +62,7 @@ def get_key():
 def get_user():
     user = session.get('user')
     if user:
+        is_moderator = "moderator" in user.get("name", "").lower()
+        user["isModerator"] = is_moderator
         return jsonify(user)
     return jsonify({'error': 'No user logged in'}), 401
