@@ -127,6 +127,18 @@ h2 a:hover {
   z-index: 1100;
   border-radius: 4px;
 }
+.account-button {
+  padding: 8px 12px;
+  font-size: 1rem;
+  border: none;
+  background-color: white;
+  color: black;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 
 @media (min-width: 1024px) {
   .column-container {

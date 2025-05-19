@@ -107,7 +107,13 @@
 
 <main>
   <header>
-    <button class="login-button" on:click={handleLoginButtonClick}>LOG IN</button>
+    {#if !loggedIn}
+      <button class="login-button" on:click={handleLoginButtonClick}>LOG IN</button>
+    {:else}
+      <button class="account-button" on:click={handleLoginButtonClick}>
+        Account <span class="caret">▼</span>
+      </button>
+    {/if}
     <img src={NYTHead} alt="New York Times logo" class="nyt-head">
     <div class="page-info">
       <p class="page-date">{date}</p>
