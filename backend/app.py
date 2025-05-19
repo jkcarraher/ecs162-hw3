@@ -103,7 +103,7 @@ def post_comment():
         "parentCommentId": parent_comment_id,  # can be None if it's a top-level comment
         "commentText": comment_text,
         "user": user,  # store the whole user object or just part of it (e.g., user['email'])
-        "createdAt": datetime.datetime.utcnow()
+        "createdAt": datetime.datetime.now(datetime.UTC)
     }
     result = comments_collection.insert_one(comment)
     comment['_id'] = str(result.inserted_id)
