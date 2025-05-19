@@ -27,10 +27,7 @@ oauth.register(
 
 @app.route('/')
 def home():
-    user = session.get('user')
-    if user:
-        return f"<h2>Logged in as {user['email']}</h2><a href='/logout'>Logout</a>"
-    return '<a href="/login">Login with Dex</a>'
+    return redirect('http://localhost:5173')
 
 @app.route('/login')
 def login():
@@ -60,3 +57,10 @@ if __name__ == '__main__':
 @app.route('/api/key')
 def get_key():
     return jsonify({'apiKey': os.getenv('NYT_API_KEY')})
+
+@app.route('/api/user')
+def get_user():
+    user = session.get('user')
+    if user:
+        return jsonify(user)
+    return jsonify({'error': 'No user logged in'}), 401

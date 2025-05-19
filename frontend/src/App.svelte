@@ -4,7 +4,8 @@
   import { fetchApiKey, fetchArticles } from './lib/Article.svelte';
   import NYTHead from './assets/NewYorkTimesHead.png';
   import CommentIcon from './assets/comment.png';
-  import CommentModal from './lib/CommentModal.svelte'; // We'll create this component
+  import CommentModal from './lib/CommentModal.svelte';
+  import LoginModal from './lib/LoginModal.svelte';
 
   let date: string = new Date().toLocaleDateString(undefined, {
     weekday: 'long',
@@ -21,9 +22,11 @@
   let comments: string[] = [];
   let commentCounts: { [articleUrl: string]: number } = {};
 
+  let loggedIn: boolean = false; 
+  let showLoginModal: boolean = false;
+  let userEmail: string = '';
+
   async function fetchComments(articleId: string): Promise<string[]> {
-    // In a real application, you would fetch comments from an API
-    // based on the articleId. For now, let's return some dummy data.
     return [`Comment 1 for article ${articleId}`, `Another thought on article ${articleId}`];
   }
 
@@ -39,12 +42,46 @@
     comments = [];
   }
 
+  function handleLoginButtonClick(): void {
+    if (!loggedIn) {
+      window.location.href = 'http://localhost:8000/login';
+    } else {
+      showLoginModal = true;
+    }
+  }
+
+  function closeLoginModal(): void {
+    showLoginModal = false;
+  }
+
+  function logout(): void {
+    window.location.href = 'http://localhost:8000/logout';
+  }
+
   async function updateOnScroll(): Promise<void> {
     const bottomOfPage = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
     if (bottomOfPage) {
       page += 1;
       let newArticles = await fetchArticles(apiKey, page);
       articles = [...articles, ...newArticles];
+    }
+  }
+
+  async function checkLogin(): Promise<void> {
+    try {
+      const res = await fetch('/api/user');
+      if (res.ok) {
+        const data = await res.json();
+        userEmail = data.email || '';
+        loggedIn = true;
+      } else {
+        loggedIn = false;
+        userEmail = '';
+      }
+    } catch (err) {
+      console.error('Failed to check login status:', err);
+      loggedIn = false;
+      userEmail = '';
     }
   }
 
@@ -61,12 +98,16 @@
       console.error('API key was not fetched, cannot fetch articles.');
       articles = [];
     }
+    // Call the /api/user route in the backend to set login state
+    await checkLogin();
+    
     window.addEventListener('scroll', updateOnScroll);
   });
 </script>
 
 <main>
   <header>
+    <button class="login-button" on:click={handleLoginButtonClick}>LOG IN</button>
     <img src={NYTHead} alt="New York Times logo" class="nyt-head">
     <div class="page-info">
       <p class="page-date">{date}</p>
@@ -88,9 +129,14 @@
   </header>
   <hr>
   <div class="column-container">
-    {#each articles as article (article.url)} <article class="column">
+    {#each articles as article (article.url)}
+      <article class="column">
         <img class="article-img" src={article.img_url} alt={article.img_cap}>
-        <h2><a href={article.url} target="_blank" rel="noopener noreferrer">{article.headline}</a></h2>
+        <h2>
+          <a href={article.url} target="_blank" rel="noopener noreferrer">
+            {article.headline}
+          </a>
+        </h2>
         <p>{article.snippet}</p>
         <div class="article-info">
           <small>{article.published.toLocaleDateString()}</small>
@@ -101,7 +147,6 @@
             </button>
           </div>
         </div>
-        
       </article>
     {/each}
   </div>
@@ -113,5 +158,12 @@
       onClose={closeModal}
       articleHeadline={articles.find(article => article.url === selectedArticleId)?.headline || 'Article Title'}
     />
+  {/if}
+  
+  {#if showLoginModal}
+    <LoginModal 
+      userEmail={userEmail} 
+      onLogout={logout} 
+      onClose={closeLoginModal} />
   {/if}
 </main>

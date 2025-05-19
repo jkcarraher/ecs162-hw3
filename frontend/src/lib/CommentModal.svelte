@@ -74,7 +74,7 @@
     margin-top: 20px;
     padding: 10px 15px;
     cursor: pointer;
-    align-self: flex-start; /* Align to the left within the content area */
+    align-self: flex-start;
   }
 
   .article-title {
@@ -109,7 +109,7 @@
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px 0 0 5px;
-    resize: none; /* Prevent resizing */
+    resize: none;
   }
 
   .post-comment-section button {

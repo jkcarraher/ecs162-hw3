@@ -114,6 +114,20 @@ h2 a:hover {
   height: 20px;
 }
 
+.login-button {
+  position: absolute;
+  top: 40px;
+  right: 200px;
+  padding: 8px 12px;
+  font-size: 1rem;
+  border: none;
+  background-color: #567B94;
+  color: white;
+  cursor: pointer;
+  z-index: 1100;
+  border-radius: 4px;
+}
+
 @media (min-width: 1024px) {
   .column-container {
     grid-template-columns: repeat(3, 1fr);
@@ -152,5 +166,3 @@ h2 a:hover {
     display: none;
   }
 }
-
-/*# sourceMappingURL=app.css.map */
