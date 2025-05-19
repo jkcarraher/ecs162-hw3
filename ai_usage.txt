@@ -1,0 +1,1 @@
+Used OpenAI's o3-mini model to assist in key decision making for mongoDB database architecture, learning how to make a side loading modal, and how to structure the POST and DELETE routes in the backend.
