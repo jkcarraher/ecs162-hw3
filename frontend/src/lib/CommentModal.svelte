@@ -1,14 +1,64 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   export let selectedArticleId: string;
-  export let comments: string[];
   export let onClose: () => void;
   export let articleHeadline: string;
 
+  // We'll use an array of comment texts. Adjust as needed if you want a full comment object.
+  let comments: string[] = [];
   let newComment: string = '';
+  // Optional: For reply functionality (set this when replying to a comment)
+  let parentCommentId: string | null = null;
+
+  // Fetch only comments related to the selected article 
+  async function fetchComments(): Promise<void> {
+    try {
+      const res = await fetch(`http://localhost:8000/api/comments/${selectedArticleId}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Assuming data returns an array of comment documents; here we take only the commentText.
+        comments = data.map((comment: any) => comment.commentText);
+      } else {
+        console.error('Failed to load comments:', await res.text());
+      }
+    } catch (err) {
+      console.error('Failed to load comments:', err);
+    }
+  }
+
+  onMount(async () => {
+    await fetchComments();
+  });
 
   async function postComment(): Promise<void> {
     if (newComment.trim() !== '') {
-      console.log('Posting comment:', newComment, 'for article:', selectedArticleId);
+      const payload = {
+        articleId: selectedArticleId,
+        commentText: newComment,
+        parentCommentId: parentCommentId // remains null for a top-level comment
+      };
+
+      try {
+        const res = await fetch('http://localhost:8000/api/comment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include', // include cookies/sessions
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          comments = [...comments, data.commentText];
+        } else {
+          console.error('Error posting comment:', await res.text());
+        }
+      } catch (err) {
+        console.error('Error posting comment:', err);
+      }
       newComment = '';
     }
   }
@@ -23,19 +73,16 @@
 <div class="comment-modal" on:click={handleOverlayClick}>
   <div class="modal-content">
     <div>
-        <h2 class="article-title">{articleHeadline}</h2>
-        <hr class="divider">
+      <h2 class="article-title">{articleHeadline}</h2>
+      <hr class="divider">
     </div>
-    
     <div class="comments-header">
       <h3>Comments ({comments.length})</h3>
     </div>
-
     <div class="post-comment-section">
       <textarea placeholder="Leave a comment..." bind:value={newComment}></textarea>
       <button on:click={postComment}>Post</button>
     </div>
-
     <div class="existing-comments">
       {#each comments as comment}
         <p class="comment">{comment}</p>
@@ -68,13 +115,6 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-  }
-
-  .close-button {
-    margin-top: 20px;
-    padding: 10px 15px;
-    cursor: pointer;
-    align-self: flex-start;
   }
 
   .article-title {

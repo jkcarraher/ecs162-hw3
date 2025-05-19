@@ -1,6 +1,7 @@
 <script context="module" lang="ts">
   // Formatted Article interface
   export interface Article {
+    id: string;
     headline: string;
     url: string;
     snippet: string;
@@ -11,6 +12,7 @@
 
   // https://developer.nytimes.com/docs/articlesearch-product/1/routes/articlesearch.json/get
   interface Docs {
+    _id: any;
     headline: { 
       main: string  
     };
@@ -72,6 +74,7 @@
     const data: Response = await response.json();
 
     return data.response.docs.map(doc => ({
+      id: doc._id.toString().replace('nyt://article/', ''), // remove the prefix
       headline: doc.headline.main,
       url: doc.web_url,
       snippet: doc.snippet,
