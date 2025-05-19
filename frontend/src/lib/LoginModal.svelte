@@ -1,5 +1,6 @@
 <script lang="ts">
   export let userEmail: string;
+  export let isModerator: boolean;
   export let onLogout: () => void;
   export let onClose: () => void;
   
@@ -14,6 +15,7 @@
   <div class="modal-content" on:click|stopPropagation>
     <h2>Account Info</h2>
     <p>Logged in as {userEmail}</p>
+    <p>Role moderator is {isModerator}</p>
     <button on:click={onLogout}>Logout</button>
   </div>
 </div>

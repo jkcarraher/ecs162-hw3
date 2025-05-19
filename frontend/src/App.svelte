@@ -25,6 +25,7 @@
   let loggedIn: boolean = false; 
   let showLoginModal: boolean = false;
   let userEmail: string = '';
+  let isModerator: boolean = false;
 
   async function fetchComments(articleId: string): Promise<string[]> {
     return [`Comment 1 for article ${articleId}`, `Another thought on article ${articleId}`];
@@ -74,14 +75,17 @@
         const data = await res.json();
         userEmail = data.email || '';
         loggedIn = true;
+        isModerator = data.isModerator || false;
       } else {
         loggedIn = false;
         userEmail = '';
+        isModerator = false;
       }
     } catch (err) {
       console.error('Failed to check login status:', err);
       loggedIn = false;
       userEmail = '';
+      isModerator = false;
     }
   }
 
@@ -140,7 +144,7 @@
         <div class="article-info">
           <small>{article.published.toLocaleDateString()}</small>
           <div class="article-actions">
-            <button class="comment-button" on:click={() => handleCommentButtonClick(article.url)}>
+            <button class="comment-button" on:click={() => handleCommentButtonClick(article.id)}>
               <img src={CommentIcon} alt="Comment Icon" class="comment-icon">
               <span class="comment-count">{commentCounts[article.url] || 0}</span>
             </button>
@@ -152,15 +156,15 @@
 
   {#if showModal && selectedArticleId}
     <CommentModal
-      {selectedArticleId}
-      {comments}
+      selectedArticleId={selectedArticleId}
       onClose={closeModal}
-      articleHeadline={articles.find(article => article.url === selectedArticleId)?.headline || 'Article Title'}
+      articleHeadline={articles.find(article => article.id === selectedArticleId)?.headline || 'Untitled Article'}
     />
   {/if}
   
   {#if showLoginModal}
     <LoginModal 
+      isModerator={isModerator}
       userEmail={userEmail} 
       onLogout={logout} 
       onClose={closeLoginModal} />
