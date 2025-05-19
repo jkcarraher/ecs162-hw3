@@ -1,1 +1,9 @@
-Used OpenAI's o3-mini model to assist in key decision making for mongoDB database architecture, learning how to make a side loading modal, and how to structure the POST and DELETE routes in the backend.
+
+What AI tool did you use?
+    OpenAI's o3-mini model
+
+How did you use it? What kind of questions did you ask? (include links to your conversation if applicable)
+    Used OpenAI's o3-mini model to assist in key decision making for mongoDB database architecture, learning how to make a side loading modal, and how to structure the POST and DELETE routes in the backend. No links available due to it being integrated into VSCode. 
+
+How much did it help you? How helpful and accurate was it?
+    It was very useful and pretty suprisingly accurate as it was able to conetextualize my questions with the codebase it had access to.
