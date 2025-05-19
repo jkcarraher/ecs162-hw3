@@ -130,6 +130,42 @@ h2 {
   height: 20px;
 }
 
+.login-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 8px 12px;
+  font-size: 1rem;
+  border: none;
+  background-color: #567B94;
+  color: white;
+  cursor: pointer;
+  z-index: 1100;
+  border-radius: 4px;
+}
+
+.login-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 40%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+
+.login-modal .modal-content {
+  background-color: white;
+  padding: 20px;
+  width: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
 // MEDIA QUERIES
 
 // Desktop: width >1024px
