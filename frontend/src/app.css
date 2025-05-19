@@ -115,9 +115,6 @@ h2 a:hover {
 }
 
 .login-button {
-  position: absolute;
-  top: 40px;
-  right: 200px;
   padding: 8px 12px;
   font-size: 1rem;
   border: none;
@@ -140,12 +137,55 @@ h2 a:hover {
   gap: 5px;
 }
 
+/* HEADER */
+.header-container {
+    display: grid;
+    grid-template-columns: 1fr 4fr 1fr;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #000;
+    margin: 0px 20px;
+    margin-top: 10px;
+}
+.header-column-left {
+    display: block;
+    text-align: start;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+.header-column-center {
+    display: block;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0px;
+}
+.header-column-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.nyt-logo {
+    width: 485px;
+    height: auto;
+}
+
 @media (min-width: 1024px) {
   .column-container {
     grid-template-columns: repeat(3, 1fr);
   }
   .column-container .column:nth-child(3n) {
     border-right: none;
+  }
+  .header-column-left{
+      display: block;
+  }
+  .header-column-right{
+      display: flex;
   }
 }
 @media (min-width: 768px) and (max-width: 1024px) {
@@ -162,6 +202,18 @@ h2 a:hover {
   nav {
     display: none;
   }
+  .header-column-left{
+      display: none;
+  }
+  .header-column-right{
+      display: none;
+  }
+  .header-container {
+      grid-template-columns: 1fr;
+  }
+  .nyt-logo {
+      width: 300px;
+  }
 }
 @media (max-width: 768px) {
   .column-container {
@@ -176,5 +228,17 @@ h2 a:hover {
   .page-info,
   nav {
     display: none;
+  }
+  .header-column-left{
+      display: none;
+  }
+  .header-column-right{
+      display: none;
+  }
+  .header-container {
+      grid-template-columns: 1fr;
+  }
+  .nyt-logo {
+      width: 300px;
   }
 }
